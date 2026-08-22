@@ -22,10 +22,16 @@ router.get('/', async (req, res) => {
 
     res.json(foods);
   } catch (error) {
-    res.status(500).json({
-      message: 'Failed to fetch foods',
-    });
-  }
+  console.error('Foods DB error:', {
+    code: error.code,
+    message: error.message,
+    sqlMessage: error.sqlMessage,
+  });
+
+  res.status(500).json({
+    message: 'Failed to fetch foods',
+  });
+}
 });
 
 module.exports = router;
