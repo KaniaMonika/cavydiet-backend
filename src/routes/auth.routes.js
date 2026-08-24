@@ -285,4 +285,62 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+router.put(
+  '/change-username',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const username =
+        typeof req.body.username === 'string'
+          ? req.body.username.trim()
+          : '';
+
+      if (username.length < 3) {
+        return res.status(400).json({
+          message: 'Username must be at least 3 characters long',
+        });
+      }
+
+      if (username.length > 50) {
+        return res.status(400).json({
+          message: 'Username cannot exceed 50 characters',
+        });
+      }
+
+      const [result] = await pool.query(
+        `
+        UPDATE users
+        SET username = ?
+        WHERE id = ?
+        `,
+        [username, userId]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: 'User not found',
+        });
+      }
+
+      return res.json({
+        message: 'Username changed successfully',
+        username,
+      });
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({
+          message: 'This username is already taken',
+        });
+      }
+
+      console.error('Change username error:', error);
+
+      return res.status(500).json({
+        message: 'Failed to change username',
+      });
+    }
+  }
+);
+
 module.exports = router;
