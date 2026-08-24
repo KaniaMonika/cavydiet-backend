@@ -212,24 +212,18 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { name, sex, weightG } = req.body;
+  const { name, sex } = req.body;
   const userId = req.user.id;
 
-  if (!name || !name.trim() || !weightG) {
+  if (!name || !name.trim()) {
     return res.status(400).json({
-      message: 'Name and weight are required',
+      message: 'Name is required',
     });
   }
 
   if (name.trim().length > 50) {
     return res.status(400).json({
       message: 'Name must be 50 characters or less',
-    });
-  }
-
-  if (!Number.isInteger(Number(weightG)) || Number(weightG) < 1) {
-    return res.status(400).json({
-      message: 'Weight must be a whole number greater than 0',
     });
   }
 
@@ -244,11 +238,13 @@ router.put('/:id', authMiddleware, async (req, res) => {
       `
       UPDATE guinea_pigs gp
       JOIN herds h ON gp.herd_id = h.id
-      SET gp.name = ?, gp.sex = ?, gp.weight_g = ?
+      SET
+        gp.name = ?,
+        gp.sex = ?
       WHERE gp.id = ?
-      AND h.user_id = ?
+        AND h.user_id = ?
       `,
-      [name.trim(), sex, Number(weightG), id, userId]
+      [name.trim(), sex, id, userId]
     );
 
     if (result.affectedRows === 0) {
@@ -260,13 +256,13 @@ router.put('/:id', authMiddleware, async (req, res) => {
     return res.json({
       message: 'Piggy updated successfully',
     });
-      } catch (error) {
-      console.error('Update piggy error:', error);
+  } catch (error) {
+    console.error('Update piggy error:', error);
 
-      return res.status(500).json({
-        message: 'Failed to update piggy',
-      });
-    }
+    return res.status(500).json({
+      message: 'Failed to update piggy',
+    });
+  }
 });
 
 router.get('/', authMiddleware, async (req, res) => {
