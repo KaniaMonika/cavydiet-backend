@@ -282,7 +282,15 @@ router.get('/', authMiddleware, async (req, res) => {
         guinea_pigs.weight_g,
         guinea_pigs.herd_id,
         guinea_pigs.photo_url,
-        CONCAT('Herd ', herds.id) AS herd_name
+        CONCAT(
+          'Herd ',
+          (
+            SELECT COUNT(*)
+            FROM herds AS h2
+            WHERE h2.user_id = herds.user_id
+              AND h2.id <= herds.id
+          )
+        ) AS herd_name
       FROM guinea_pigs
       JOIN herds
         ON guinea_pigs.herd_id = herds.id
@@ -548,7 +556,15 @@ router.get('/:id', authMiddleware, async (req, res) => {
         guinea_pigs.weight_g,
         guinea_pigs.herd_id,
         guinea_pigs.photo_url,
-        CONCAT('Herd ', herds.id) AS herd_name
+        CONCAT(
+          'Herd ',
+          (
+            SELECT COUNT(*)
+            FROM herds AS h2
+            WHERE h2.user_id = herds.user_id
+              AND h2.id <= herds.id
+          )
+        ) AS herd_name
       FROM guinea_pigs
       JOIN herds
         ON guinea_pigs.herd_id = herds.id
